@@ -1,0 +1,11 @@
+# Build output
+.build/
+.preview/
+*.app/
+dist/
+
+# Icon intermediates
+Resources/*.iconset/
+
+# macOS
+.DS_Store

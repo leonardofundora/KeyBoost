@@ -23,9 +23,11 @@ import Foundation
     func retrieveAddress(forPeripheral peripheral: CBPeripheral) -> NSData?
 }
 
-private let selSetLatency = Selector(("setDesiredConnectionLatency:forPeripheral:"))
-private let selRetrieveAll = Selector(("retrieveConnectedPeripheralsWithServices:allowAll:"))
-private let selAddress = Selector(("retrieveAddressForPeripheral:"))
+// NSSelectorFromString y no #selector: estos selectores son privados y no existen
+// en ninguna cabecera pública contra la que el compilador pueda comprobarlos.
+private let selSetLatency = NSSelectorFromString("setDesiredConnectionLatency:forPeripheral:")
+private let selRetrieveAll = NSSelectorFromString("retrieveConnectedPeripheralsWithServices:allowAll:")
+private let selAddress = NSSelectorFromString("retrieveAddressForPeripheral:")
 
 extension CBCentralManager {
     private var priv: CBCentralPrivate { unsafeBitCast(self, to: CBCentralPrivate.self) }

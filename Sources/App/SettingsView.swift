@@ -51,7 +51,7 @@ struct SettingsView: View {
                 .frame(width: 30)
             VStack(alignment: .leading, spacing: 2) {
                 Text("KeyBoost").font(.title2).bold()
-                Text("Mantiene los teclados Bluetooth LE en baja latencia.")
+                Text("Keeps Bluetooth LE keyboards on a low-latency link.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -70,8 +70,8 @@ struct SettingsView: View {
         section(nil) {
             HStack {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Activado").bold()
-                    Text("Apagado, KeyBoost no toca ningún enlace.")
+                    Text("Enabled").bold()
+                    Text("When off, KeyBoost leaves every link alone.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -84,10 +84,10 @@ struct SettingsView: View {
     }
 
     private var devices: some View {
-        section("Dispositivos Bluetooth LE") {
+        section(L("Bluetooth LE devices")) {
             VStack(alignment: .leading, spacing: 8) {
                 if model.status.devices.isEmpty {
-                    Text("No se ve ningún dispositivo conectado.")
+                    Text("No connected device in sight.")
                         .foregroundStyle(.secondary).font(.callout)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
@@ -115,9 +115,9 @@ struct SettingsView: View {
     }
 
     private var performance: some View {
-        section("Rendimiento") {
+        section(L("Performance")) {
             VStack(alignment: .leading, spacing: 12) {
-                row("Latencia del enlace") {
+                row(L("Link latency")) {
                     Picker("", selection: Binding(
                         get: { model.settings.latencyLevel },
                         set: { value in model.edit { $0.latencyLevel = value } })) {
@@ -127,16 +127,14 @@ struct SettingsView: View {
                         }
                         .labelsHidden()
                 }
-                if let choice = model.latencyChoice {
-                    caption("\(choice.detail) · peor caso ~\(choice.worstCaseMs) ms")
-                }
+                if let detail = model.latencyDetail { caption(detail) }
                 if let text = model.latencyWarning {
                     warning(text, level: model.settings.latencyLevel == 2 ? .red : .orange)
                 }
 
                 Divider()
 
-                row("Soltar tras inactividad") {
+                row(L("Release when idle for")) {
                     Picker("", selection: Binding(
                         get: { model.settings.idleReleaseSeconds },
                         set: { value in model.edit { $0.idleReleaseSeconds = value } })) {
@@ -146,8 +144,8 @@ struct SettingsView: View {
                         }
                         .labelsHidden()
                 }
-                caption("Al soltar, el teclado vuelve a ahorrar batería. La primera pulsación "
-                        + "después llega algo lenta; a partir de ahí, instantáneo.")
+                caption(L("After releasing, the keyboard goes back to saving power. The next "
+                          + "keystroke arrives a little late; everything after it is instant."))
             }
         }
     }
@@ -155,14 +153,14 @@ struct SettingsView: View {
     private var options: some View {
         section(nil) {
             VStack(alignment: .leading, spacing: 10) {
-                Toggle("Mostrar en la barra de menús", isOn: Binding(
+                Toggle("Show in the menu bar", isOn: Binding(
                     get: { model.settings.showMenuBarIcon },
                     set: { value in model.edit { $0.showMenuBarIcon = value } }))
                 VStack(alignment: .leading, spacing: 1) {
-                    Toggle("Arrancar al iniciar sesión", isOn: Binding(
+                    Toggle("Start at login", isOn: Binding(
                         get: { model.launchAtLogin },
                         set: { model.setLaunchAtLogin($0) }))
-                    caption("Sin esto, KeyBoost deja de funcionar al reiniciar el Mac.")
+                    caption(L("Without this, KeyBoost stops working when you restart the Mac."))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -171,10 +169,10 @@ struct SettingsView: View {
 
     private var footer: some View {
         HStack {
-            Text("Cerrar esta ventana no detiene la aceleración.")
+            Text("Closing this window does not stop the boost.")
                 .font(.caption).foregroundStyle(.secondary)
             Spacer()
-            Button("Ver registro…") {
+            Button("Show log…") {
                 NSWorkspace.shared.selectFile(Paths.log.path, inFileViewerRootedAtPath: "")
             }
         }

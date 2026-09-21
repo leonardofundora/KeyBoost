@@ -45,32 +45,19 @@ final class Model: ObservableObject {
         if let issue = status.bluetooth.problem { return issue }
         if !status.agentAlive {
             return launchAtLogin
-                ? "El motor no está respondiendo. Prueba a desactivar y reactivar el arranque automático."
-                : "El motor no está corriendo. Activa «Arrancar al iniciar sesión» para ponerlo en marcha."
+                ? L("The engine is not responding. Try turning “Start at login” off and on again.")
+                : L("The engine is not running. Turn on “Start at login” to start it.")
         }
         if !status.apiAvailable {
-            return "Esta versión de macOS ya no expone el ajuste de latencia. KeyBoost no puede acelerar nada."
+            return L("This version of macOS no longer exposes the latency setting. KeyBoost cannot help.")
         }
         return nil
     }
 
-    var latencyChoice: Settings.LatencyChoice? {
-        Settings.latencyChoices.first { $0.level == settings.latencyLevel }
-    }
-
-    /// Advertencia proporcional: el nivel más alto es literalmente peor que no usar la app.
-    var latencyWarning: String? {
-        guard let choice = latencyChoice, !choice.isSafe else { return nil }
-        let base = "Peor caso ~\(choice.worstCaseMs) ms en vez de 30. "
-        return choice.level == 2
-            ? base + "Es más lento que el fallo que KeyBoost corrige (345 ms): así el teclado irá peor que sin la app."
-            : base + "Se nota al teclear, pero ahorra batería."
-    }
-
     var headline: String {
-        if !settings.enabled { return "Desactivado" }
-        if problem != nil { return "Detenido" }
-        return status.active ? "Turbo" : "En reposo"
+        if !settings.enabled { return L("Disabled") }
+        if problem != nil { return L("Stopped") }
+        return status.active ? L("Boosting") : L("Idle")
     }
 
     var isBoosting: Bool { settings.enabled && problem == nil && status.active }
@@ -80,11 +67,29 @@ final class Model: ObservableObject {
         return status.active ? .green : .orange
     }
 
+    var latencyChoice: Settings.LatencyChoice? {
+        Settings.latencyChoices.first { $0.level == settings.latencyLevel }
+    }
+
+    /// Línea bajo el desplegable de latencia: "intervalo … · peor caso ~N ms".
+    var latencyDetail: String? {
+        guard let choice = latencyChoice else { return nil }
+        return L("%@ · worst case ~%d ms", choice.detail, choice.worstCaseMs)
+    }
+
+    /// Advertencia proporcional: el nivel más alto es literalmente peor que no usar la app.
+    var latencyWarning: String? {
+        guard let choice = latencyChoice, !choice.isSafe else { return nil }
+        return choice.level == 2
+            ? L("Worst case ~%d ms instead of 30. That is slower than the bug KeyBoost fixes (345 ms), so your keyboard will be worse off than without the app.", choice.worstCaseMs)
+            : L("Worst case ~%d ms instead of 30. Noticeable while typing, but easier on the battery.", choice.worstCaseMs)
+    }
+
     /// Texto de estado por dispositivo, en la columna derecha de la lista.
     func detail(for device: DeviceStatus) -> String {
-        if !device.present { return "ausente" }
+        if !device.present { return L("away") }
         if !settings.boosts(device.address) { return "—" }
-        if !settings.enabled { return "desactivado" }
-        return device.boosted ? "latency 0" : "en reposo"
+        if !settings.enabled { return L("off") }
+        return device.boosted ? L("latency 0") : L("idle")
     }
 }

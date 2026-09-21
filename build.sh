@@ -54,6 +54,9 @@ bundle() {           # bundle <nombre> <bundle-id> <LSUIElement true|false> <dir
     <key>CFBundleDisplayName</key>             <string>$name</string>
     <key>CFBundleExecutable</key>              <string>$name</string>
     <key>CFBundleIdentifier</key>              <string>$ident</string>
+    <key>CFBundleDevelopmentRegion</key>       <string>en</string>
+    <key>CFBundleLocalizations</key>
+    <array><string>en</string><string>es</string></array>
     <key>CFBundlePackageType</key>             <string>APPL</string>
     <key>CFBundleShortVersionString</key>      <string>1.0</string>
     <key>CFBundleVersion</key>                 <string>1</string>
@@ -67,6 +70,11 @@ bundle() {           # bundle <nombre> <bundle-id> <LSUIElement true|false> <dir
 </plist>
 PLIST
   cp "$ROOT/Resources/AppIcon.icns" "$app/Contents/Resources/AppIcon.icns"
+  # Traducciones: el idioma base es inglés, con español al lado. macOS elige según
+  # el idioma del sistema. Van en los dos bundles porque cada proceso lee el suyo.
+  for lproj in "$ROOT"/Resources/*.lproj; do
+    cp -R "$lproj" "$app/Contents/Resources/"
+  done
   mv "$BUILD/$name" "$app/Contents/MacOS/$name"
   codesign --force --sign "$IDENTITY" --timestamp=none "$app" >/dev/null 2>&1 \
     && echo "  firmado" || echo "  AVISO: no se pudo firmar"

@@ -24,19 +24,21 @@ struct Settings: Codable, Equatable {
         var isSafe: Bool { level == 0 }
     }
 
-    static let latencyChoices: [LatencyChoice] = [
-        .init(level: 0, label: "Máxima respuesta",
-              detail: "intervalo 10–30 ms, sin saltos", worstCaseMs: 30),
-        .init(level: 1, label: "Equilibrada",
-              detail: "intervalo 100–120 ms, 1 salto", worstCaseMs: 240),
-        .init(level: 2, label: "Mínimo consumo",
-              detail: "intervalo 290–320 ms, 1 salto", worstCaseMs: 640),
-    ]
+    static var latencyChoices: [LatencyChoice] {
+        [
+            .init(level: 0, label: L("Fastest"),
+                  detail: L("10–30 ms interval, no skipping"), worstCaseMs: 30),
+            .init(level: 1, label: L("Balanced"),
+                  detail: L("100–120 ms interval, 1 skip"), worstCaseMs: 240),
+            .init(level: 2, label: L("Lowest power"),
+                  detail: L("290–320 ms interval, 1 skip"), worstCaseMs: 640),
+        ]
+    }
 
-    static let idleChoices: [(label: String, seconds: Int)] = [
-        ("30 segundos", 30), ("1 minuto", 60), ("3 minutos", 180),
-        ("10 minutos", 600), ("Nunca soltar", 0),
-    ]
+    static var idleChoices: [(label: String, seconds: Int)] {
+        [(L("30 seconds"), 30), (L("1 minute"), 60), (L("3 minutes"), 180),
+         (L("10 minutes"), 600), (L("Never release"), 0)]
+    }
 
     static func load() -> Settings {
         JSONStore.read(Settings.self, from: Paths.settings) ?? Settings()

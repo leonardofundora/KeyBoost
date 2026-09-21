@@ -29,10 +29,10 @@ final class MenuBarController {
 
         let menu = NSMenu()
         let headline: String
-        if !settings.enabled                      { headline = "KeyBoost — desactivado" }
+        if !settings.enabled                      { headline = L("KeyBoost — disabled") }
         else if let problem = status.bluetooth.problem { headline = problem }
-        else if status.active                     { headline = "KeyBoost — turbo" }
-        else                                      { headline = "KeyBoost — en reposo" }
+        else if status.active                     { headline = L("KeyBoost — boosting") }
+        else                                      { headline = L("KeyBoost — idle") }
         let header = NSMenuItem(title: headline, action: nil, keyEquivalent: "")
         header.isEnabled = false
         menu.addItem(header)
@@ -41,7 +41,7 @@ final class MenuBarController {
         if !chosen.isEmpty {
             menu.addItem(.separator())
             for device in chosen {
-                let detail = !device.present ? "ausente" : (device.boosted ? "latency 0" : "en reposo")
+                let detail = !device.present ? L("away") : (device.boosted ? L("latency 0") : L("idle"))
                 let entry = NSMenuItem(title: "\(device.name) — \(detail)", action: nil, keyEquivalent: "")
                 entry.isEnabled = false
                 menu.addItem(entry)
@@ -49,16 +49,16 @@ final class MenuBarController {
         }
 
         menu.addItem(.separator())
-        let toggle = NSMenuItem(title: "Activado", action: #selector(toggleEnabled), keyEquivalent: "")
+        let toggle = NSMenuItem(title: L("Enabled"), action: #selector(toggleEnabled), keyEquivalent: "")
         toggle.target = self
         toggle.state = settings.enabled ? .on : .off
         menu.addItem(toggle)
 
-        let open = NSMenuItem(title: "Abrir KeyBoost…", action: #selector(openApp), keyEquivalent: "")
+        let open = NSMenuItem(title: L("Open KeyBoost…"), action: #selector(openApp), keyEquivalent: "")
         open.target = self
         menu.addItem(open)
 
-        let hide = NSMenuItem(title: "Ocultar este icono", action: #selector(hideIcon), keyEquivalent: "")
+        let hide = NSMenuItem(title: L("Hide this icon"), action: #selector(hideIcon), keyEquivalent: "")
         hide.target = self
         menu.addItem(hide)
 

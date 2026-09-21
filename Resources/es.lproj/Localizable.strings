@@ -1,0 +1,65 @@
+/* Niveles de latencia */
+"Fastest" = "Máxima respuesta";
+"Balanced" = "Equilibrada";
+"Lowest power" = "Mínimo consumo";
+"10–30 ms interval, no skipping" = "intervalo 10–30 ms, sin saltos";
+"100–120 ms interval, 1 skip" = "intervalo 100–120 ms, 1 salto";
+"290–320 ms interval, 1 skip" = "intervalo 290–320 ms, 1 salto";
+
+/* Soltar por inactividad */
+"30 seconds" = "30 segundos";
+"1 minute" = "1 minuto";
+"3 minutes" = "3 minutos";
+"10 minutes" = "10 minutos";
+"Never release" = "Nunca soltar";
+
+/* Tipos de dispositivo y estado */
+"keyboard" = "teclado";
+"mouse" = "ratón";
+"away" = "ausente";
+"off" = "desactivado";
+"idle" = "en reposo";
+"latency 0" = "latency 0";
+
+/* Problemas de Bluetooth */
+"Bluetooth is turned off." = "El Bluetooth está apagado.";
+"Bluetooth permission missing: Settings › Privacy & Security › Bluetooth." = "Falta el permiso de Bluetooth: Ajustes › Privacidad y seguridad › Bluetooth.";
+"This Mac does not support Bluetooth LE." = "Este Mac no admite Bluetooth LE.";
+"Bluetooth state unknown." = "Estado del Bluetooth desconocido.";
+
+/* Problemas del motor */
+"The engine is not responding. Try turning “Start at login” off and on again." = "El motor no responde. Prueba a desactivar y volver a activar «Arrancar al iniciar sesión».";
+"The engine is not running. Turn on “Start at login” to start it." = "El motor no está en marcha. Activa «Arrancar al iniciar sesión» para ponerlo en funcionamiento.";
+"This version of macOS no longer exposes the latency setting. KeyBoost cannot help." = "Esta versión de macOS ya no expone el ajuste de latencia. KeyBoost no puede hacer nada.";
+
+/* Estado en la cabecera */
+"Disabled" = "Desactivado";
+"Stopped" = "Detenido";
+"Boosting" = "Turbo";
+"Idle" = "En reposo";
+
+/* Ventana */
+"Keeps Bluetooth LE keyboards on a low-latency link." = "Mantiene los teclados Bluetooth LE en un enlace de baja latencia.";
+"Enabled" = "Activado";
+"When off, KeyBoost leaves every link alone." = "Apagado, KeyBoost no toca ningún enlace.";
+"Bluetooth LE devices" = "Dispositivos Bluetooth LE";
+"No connected device in sight." = "No se ve ningún dispositivo conectado.";
+"Performance" = "Rendimiento";
+"Link latency" = "Latencia del enlace";
+"Release when idle for" = "Soltar tras inactividad";
+"%@ · worst case ~%d ms" = "%1$@ · peor caso ~%2$d ms";
+"Worst case ~%d ms instead of 30. Noticeable while typing, but easier on the battery." = "Peor caso ~%d ms en vez de 30. Se nota al teclear, pero ahorra batería.";
+"Worst case ~%d ms instead of 30. That is slower than the bug KeyBoost fixes (345 ms), so your keyboard will be worse off than without the app." = "Peor caso ~%d ms en vez de 30. Es más lento que el fallo que KeyBoost corrige (345 ms), así que el teclado irá peor que sin la app.";
+"After releasing, the keyboard goes back to saving power. The next keystroke arrives a little late; everything after it is instant." = "Al soltar, el teclado vuelve a ahorrar batería. La siguiente pulsación llega algo tarde; a partir de ahí, todo instantáneo.";
+"Show in the menu bar" = "Mostrar en la barra de menús";
+"Start at login" = "Arrancar al iniciar sesión";
+"Without this, KeyBoost stops working when you restart the Mac." = "Sin esto, KeyBoost deja de funcionar al reiniciar el Mac.";
+"Closing this window does not stop the boost." = "Cerrar esta ventana no detiene la aceleración.";
+"Show log…" = "Mostrar el registro…";
+
+/* Barra de menús */
+"KeyBoost — disabled" = "KeyBoost — desactivado";
+"KeyBoost — boosting" = "KeyBoost — turbo";
+"KeyBoost — idle" = "KeyBoost — en reposo";
+"Open KeyBoost…" = "Abrir KeyBoost…";
+"Hide this icon" = "Ocultar este icono";

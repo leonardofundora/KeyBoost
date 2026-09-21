@@ -59,10 +59,16 @@ the way when you are not typing.
   <img src="docs/screenshot.png" width="620" alt="KeyBoost window">
 </p>
 
+<p align="center">
+  <sub>English and Spanish, following your system language —
+  <a href="docs/screenshot-es.png">Spanish</a>.</sub>
+</p>
+
 ## Install
 
-**Download** the latest release, unzip, and drag `KeyBoost.app` to your Applications folder.
-The background engine ships inside the app — there is nothing else to install.
+**Download the latest release**, open the `.dmg`, and drag `KeyBoost.app` to Applications.
+The background engine ships inside the app — there is nothing else to install. A `.zip` is
+available too if you prefer.
 
 Because the app is not notarised, macOS will refuse the first launch. Right-click the app and pick
 **Open**, then confirm. You only do this once. If macOS still blocks it:
@@ -148,8 +154,13 @@ rm -rf /Applications/KeyBoost.app ~/Library/Application\ Support/KeyBoost
   `responds(to:)`, so a future macOS that removes them makes KeyBoost stop helping rather than
   crash — but it will stop helping.
 - **Built for macOS 27.** The bug it works around does not exist on earlier versions.
-- **The interface is in Spanish.** Localisation is welcome.
 - **Not notarised.** See [Install](#install).
+
+## Contributing
+
+Translations are the easiest way to help: copy `Resources/en.lproj/Localizable.strings` to a new
+`<language>.lproj`, translate the right-hand side, and add the language code to
+`CFBundleLocalizations` in `build.sh`. The app currently ships English and Spanish.
 
 ## License
 

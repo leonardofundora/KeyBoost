@@ -5,8 +5,8 @@ enum DeviceKind: String, Codable {
 
     var label: String {
         switch self {
-        case .keyboard: return "teclado"
-        case .pointing: return "ratón"
+        case .keyboard: return L("keyboard")
+        case .pointing: return L("mouse")
         case .other:    return "—"
         }
     }
@@ -19,10 +19,10 @@ enum BluetoothState: String, Codable {
     var problem: String? {
         switch self {
         case .on:           return nil
-        case .off:          return "Bluetooth está apagado."
-        case .unauthorized: return "Falta permiso de Bluetooth: Ajustes › Privacidad y seguridad › Bluetooth."
-        case .unsupported:  return "Este Mac no soporta Bluetooth LE."
-        case .unknown:      return "Estado de Bluetooth desconocido."
+        case .off:          return L("Bluetooth is turned off.")
+        case .unauthorized: return L("Bluetooth permission missing: Settings › Privacy & Security › Bluetooth.")
+        case .unsupported:  return L("This Mac does not support Bluetooth LE.")
+        case .unknown:      return L("Bluetooth state unknown.")
         }
     }
 }

@@ -15,7 +15,7 @@ enum DeviceKind: String, Codable {
 enum BluetoothState: String, Codable {
     case on, off, unauthorized, unsupported, unknown
 
-    /// Texto para la interfaz, o nil si no hay nada que explicar.
+    /// Text for the interface, or nil when there is nothing to explain.
     var problem: String? {
         switch self {
         case .on:           return nil
@@ -31,7 +31,7 @@ struct DeviceStatus: Codable, Equatable, Identifiable {
     var address: String
     var name: String
     var kind: DeviceKind
-    /// Presente = visible ahora mismo. Un dispositivo ausente sigue en la configuración.
+    /// Present means visible right now. An absent device stays in the configuration.
     var present: Bool
     var boosted: Bool
     var id: String { address }
@@ -39,9 +39,9 @@ struct DeviceStatus: Codable, Equatable, Identifiable {
 
 struct AgentStatus: Codable, Equatable {
     var bluetooth: BluetoothState = .unknown
-    /// Hay actividad de entrada reciente (estamos en turbo).
+    /// There has been recent input activity, so we are boosting.
     var active: Bool = false
-    /// El selector privado existe en esta version de macOS.
+    /// Whether the private selector exists on this version of macOS.
     var apiAvailable: Bool = true
     var devices: [DeviceStatus] = []
     var updated: Date = .init()
@@ -55,6 +55,6 @@ struct AgentStatus: Codable, Equatable {
         IPC.post(.statusChanged)
     }
 
-    /// El motor escribe cada pocos segundos; si lleva mucho callado, no esta vivo.
+    /// The engine writes every few seconds; a long silence means it is not running.
     var agentAlive: Bool { Date().timeIntervalSince(updated) < 15 }
 }

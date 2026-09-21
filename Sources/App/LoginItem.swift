@@ -1,9 +1,9 @@
 import Foundation
 
-/// Arranque automático del motor, vía LaunchAgent.
+/// Starting the engine automatically, via a LaunchAgent.
 enum LoginItem {
-    /// El motor va anidado en el bundle principal, como cualquier login item de macOS.
-    /// Así la app se distribuye como una sola pieza que se arrastra a Aplicaciones.
+    /// The engine is nested inside the main bundle, like any macOS login item, so the app
+    /// ships as a single thing you drag to Applications.
     static var agentExecutable: URL {
         Bundle.main.bundleURL
             .appendingPathComponent("Contents/Library/LoginItems/KeyBoostAgent.app/Contents/MacOS/KeyBoostAgent")
@@ -39,7 +39,7 @@ enum LoginItem {
         }
     }
 
-    /// Arranca el motor ahora mismo si no está corriendo (para no obligar a reiniciar sesión).
+    /// Starts the engine right away if it is not running, so you need not log out and back in.
     static func startAgentIfNeeded() {
         guard isEnabled else { return }
         launchctl(["kickstart", "gui/\(getuid())/\(Paths.launchAgentLabel)"])

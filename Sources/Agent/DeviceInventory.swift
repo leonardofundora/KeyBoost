@@ -1,11 +1,10 @@
 import Foundation
 
-/// Averigua si una dirección es un teclado o un ratón.
+/// Works out whether an address belongs to a keyboard or a pointing device.
 ///
-/// CoreBluetooth no lo dice (`retrievePairingInfoForPeripheral:` devuelve vacío), así que
-/// se parsea `system_profiler`. Es lento (~1-2 s), por eso corre fuera del hilo principal
-/// y con el resultado cacheado. Que falle no es grave: el dispositivo sigue siendo usable
-/// como `.other`.
+/// CoreBluetooth will not say (`retrievePairingInfoForPeripheral:` comes back empty), so
+/// `system_profiler` is parsed instead. That is slow (~1-2 s), hence the background queue
+/// and the cache. Failing is not serious: the device stays usable as `.other`.
 final class DeviceInventory {
     private var kinds: [String: DeviceKind] = [:]
     private var lastRefresh: Date = .distantPast
@@ -17,7 +16,7 @@ final class DeviceInventory {
         queue.sync { kinds[address.uppercased()] ?? .other }
     }
 
-    /// Relanza el parseo si hay direcciones sin clasificar y ha pasado el intervalo mínimo.
+    /// Re-runs the parse when there are unclassified addresses and the interval has passed.
     func refreshIfNeeded(addresses: [String]) {
         let unknown = queue.sync {
             addresses.filter { kinds[$0.uppercased()] == nil }
@@ -51,7 +50,7 @@ final class DeviceInventory {
         task.waitUntilExit()
         guard let text = String(data: data, encoding: .utf8) else { return [:] }
 
-        // Dentro de cada bloque de dispositivo, "Address:" precede a "Minor Type:".
+        // Within each device block, "Address:" comes before "Minor Type:".
         var result: [String: DeviceKind] = [:]
         var current: String?
         for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {

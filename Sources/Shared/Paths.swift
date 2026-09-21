@@ -19,7 +19,7 @@ enum Paths {
     }
 }
 
-/// Escritura atomica + lectura tolerante. Un JSON corrupto nunca debe tumbar un proceso.
+/// Atomic writes, forgiving reads. Corrupt JSON must never take a process down.
 enum JSONStore {
     static func write<T: Encodable>(_ value: T, to url: URL) {
         let enc = JSONEncoder()
@@ -45,7 +45,7 @@ enum Log {
         guard let data = line.data(using: .utf8) else { return }
         if let h = try? FileHandle(forWritingTo: Paths.log) {
             defer { try? h.close() }
-            // Recorta si pasa de 1 MB, para que no crezca sin fin.
+            // Truncate past 1 MB so it cannot grow forever.
             if (try? h.seekToEnd()) ?? 0 > 1_000_000 {
                 try? Data().write(to: Paths.log, options: .atomic)
                 try? data.write(to: Paths.log, options: .atomic)

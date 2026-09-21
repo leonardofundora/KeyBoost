@@ -1,8 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Interfaz de KeyBoost. Icono en el Dock y una ventana.
-/// Al cerrar la ventana la app termina y desaparece del Dock: el motor sigue por su cuenta.
+/// The KeyBoost interface: a Dock icon and one window.
+/// Closing the window quits the app and clears it from the Dock. The engine carries on.
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
     private let model = Model()

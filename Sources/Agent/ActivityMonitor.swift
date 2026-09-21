@@ -1,11 +1,11 @@
 import CoreGraphics
 import Foundation
 
-/// Cuánto hace que no tocas el equipo.
+/// How long since you last touched the machine.
 ///
-/// Usa `CGEventSourceSecondsSinceLastEventType`, que es un contador del sistema:
-/// **no es un event tap**, no lee el contenido de las pulsaciones y no necesita
-/// permiso de Accesibilidad.
+/// Uses `CGEventSourceSecondsSinceLastEventType`, a system-wide idle counter:
+/// **this is not an event tap**. It cannot read keystroke content and needs no
+/// Accessibility permission.
 enum ActivityMonitor {
     private static func seconds(_ type: CGEventType) -> Double {
         CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: type)
@@ -14,8 +14,8 @@ enum ActivityMonitor {
     private static let keyboardSignals: [CGEventType] = [.keyDown, .flagsChanged]
     private static let pointingSignals: [CGEventType] = [.mouseMoved, .leftMouseDown, .rightMouseDown, .scrollWheel]
 
-    /// Segundos desde la última actividad relevante para este tipo de dispositivo.
-    /// Un teclado no debe seguir en turbo porque muevas el trackpad.
+    /// Seconds since the last activity relevant to this kind of device.
+    /// A keyboard should not stay boosted just because you moved the trackpad.
     static func idleSeconds(for kind: DeviceKind) -> Double {
         let signals: [CGEventType]
         switch kind {

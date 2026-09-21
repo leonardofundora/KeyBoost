@@ -1,28 +1,28 @@
 import CoreBluetooth
 import Foundation
 
-/// Un dispositivo visible ahora mismo.
+/// A device visible right now.
 struct LiveDevice {
     let peripheral: CBPeripheral
     let address: String
     let name: String
 }
 
-/// Dueño del `CBCentralManager`. Descubre dispositivos y mantiene o suelta el enlace.
+/// Owns the `CBCentralManager`. Discovers devices and holds or releases the link.
 ///
-/// Mantener la conexión es lo que sostiene `peripheral latency: 0`; en cuanto se suelta,
-/// `bluetoothd` vuelve a su perfil `LEHID-15ms` con latency 22.
+/// Holding the connection is what sustains `peripheral latency: 0`; the moment it is
+/// released, `bluetoothd` reverts to its `LEHID-15ms` profile with latency 22.
 final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
     private var central: CBCentralManager!
-    /// Direcciones que queremos mantener aceleradas, y su periférico.
+    /// Addresses we want kept boosted, and their peripherals.
     private var held: [String: CBPeripheral] = [:]
-    /// Cuándo se pidió latencia baja por última vez, para no repetirlo cada tick.
+    /// When low latency was last requested, so it is not repeated every tick.
     private var lastRequest: [String: Date] = [:]
     private let requestInterval: TimeInterval = 30
 
     private(set) var state: BluetoothState = .unknown
     var onStateChange: (() -> Void)?
-    /// Nivel de `CBConnectionLatency` que se pide. Lo fija el controlador desde los ajustes.
+    /// The `CBConnectionLatency` level to request. Set by the controller from settings.
     var latencyLevel: Int = 0
 
     override init() {
@@ -46,10 +46,10 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
         return p.state == .connected
     }
 
-    /// Idempotente: se puede llamar en cada tick sin coste.
+    /// Idempotent: safe to call on every tick.
     ///
-    /// La petición de latencia solo se reenvía al (re)conectar o cada 30 s. Repetirla
-    /// en cada tick funcionaba, pero mandaba un XPC por segundo a bluetoothd para nada.
+    /// The latency request is only re-sent on (re)connect or every 30 s. Repeating it
+    /// each tick worked, but sent bluetoothd one XPC message per second for nothing.
     func boost(_ device: LiveDevice) {
         guard state == .on else { return }
         held[device.address] = device.peripheral
@@ -73,8 +73,8 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
         Log.write("soltado \(address)")
     }
 
-    /// Olvida el throttle para que el próximo tick reenvíe la petición.
-    /// Se usa al cambiar el nivel en los ajustes: si no, tardaría hasta 30 s en aplicarse.
+    /// Forgets the throttle so the next tick re-sends the request.
+    /// Used when the level changes in settings; otherwise it could take 30 s to apply.
     func invalidateRequests() { lastRequest.removeAll() }
 
     func releaseAll() {

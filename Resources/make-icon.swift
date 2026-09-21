@@ -1,6 +1,6 @@
 import AppKit
 
-// ─── utilidades ────────────────────────────────────────────────────────────────
+// ─── helpers ───────────────────────────────────────────────────────────────────
 
 func rr(_ r: NSRect, _ radius: CGFloat) -> NSBezierPath {
     NSBezierPath(roundedRect: r, xRadius: radius, yRadius: radius)
@@ -34,7 +34,7 @@ func shadow(_ alpha: CGFloat, _ blur: CGFloat, _ dy: CGFloat) {
     s.set()
 }
 
-/// El rayo, relleno con degradado en vez de plano.
+/// The bolt, filled with a gradient rather than flat colour.
 func bolt(size: CGFloat, gradient: NSGradient) -> NSImage? {
     let config = NSImage.SymbolConfiguration(pointSize: size, weight: .heavy)
     guard let symbol = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: nil)?
@@ -48,7 +48,7 @@ func bolt(size: CGFloat, gradient: NSGradient) -> NSImage? {
     return out
 }
 
-// ─── el icono ──────────────────────────────────────────────────────────────────
+// ─── the icon ──────────────────────────────────────────────────────────────────
 
 func render(_ px: Int) -> Data {
     let s = CGFloat(px)
@@ -68,7 +68,7 @@ func render(_ px: Int) -> Data {
     let box = NSRect(x: (s - side) / 2, y: (s - side) / 2, width: side, height: side)
     let squircle = rr(box, side * 0.2245)
 
-    // Sombra proyectada del icono.
+    // The icon's own drop shadow.
     NSGraphicsContext.saveGraphicsState()
     shadow(0.30, side * 0.055, -side * 0.022)
     NSColor.black.setFill(); squircle.fill()
@@ -77,20 +77,20 @@ func render(_ px: Int) -> Data {
     NSGraphicsContext.saveGraphicsState()
     squircle.addClip()
 
-    // Fondo: violeta arriba, azul eléctrico abajo.
+    // Background: violet at the top, electric blue at the bottom.
     grad([rgb(92, 82, 238), rgb(24, 96, 240)]).draw(in: box, angle: -90)
-    // Luz alta a la izquierda.
+    // Highlight towards the upper left.
     grad([rgb(158, 196, 255, 0.50), rgb(158, 196, 255, 0)])
         .draw(fromCenter: NSPoint(x: box.minX + box.width * 0.24, y: box.maxY - box.height * 0.18),
               radius: 0,
               toCenter: NSPoint(x: box.minX + box.width * 0.24, y: box.maxY - box.height * 0.18),
               radius: box.width * 0.78, options: [])
-    // Viñeta inferior.
+    // Vignette along the bottom.
     grad([rgb(6, 14, 64, 0), rgb(6, 14, 64, 0.34)])
         .draw(in: NSRect(x: box.minX, y: box.minY, width: box.width, height: box.height * 0.58), angle: -90)
 
     if detailed {
-        // Geometría del keycap: la base es mayor que la cara, de ahí la pared cónica.
+        // Keycap geometry: the base is wider than the top face, which gives the tapered wall.
         let baseW = box.width * 0.600
         let baseH = baseW * 0.930
         let rise  = baseH * 0.235                      // altura de la extrusión
@@ -103,20 +103,20 @@ func render(_ px: Int) -> Data {
                           width: baseW*(1-taper), height: baseH*(1-taper))
         let rBase = baseW * 0.190, rFace = face.width * 0.190
 
-        // Resplandor tras la tecla.
+        // Glow behind the key.
         grad([rgb(190, 220, 255, 0.45), rgb(190, 220, 255, 0)])
             .draw(fromCenter: NSPoint(x: cx, y: box.midY), radius: 0,
                   toCenter: NSPoint(x: cx, y: box.midY), radius: box.width * 0.44, options: [])
 
-        // Sombra de contacto bajo la tecla.
+        // Contact shadow under the key.
         NSGraphicsContext.saveGraphicsState()
         shadow(0.42, baseW * 0.16, -baseW * 0.075)
         rgb(20, 30, 90).setFill()
         rr(base, rBase).fill()
         NSGraphicsContext.restoreGraphicsState()
 
-        // Pared lateral: se interpola de la base a la cara en pasos finos.
-        // Es lo que convierte dos rectángulos apilados en una tecla de verdad.
+        // Side wall: interpolated from base to face in fine steps. This is what turns two
+        // stacked rectangles into something that reads as an actual key.
         let steps = max(24, px / 12)
         let wallLow = rgb(64, 76, 142), wallHigh = rgb(176, 188, 228)
         for i in 0...steps {
@@ -126,28 +126,28 @@ func render(_ px: Int) -> Data {
             rr(r, lerp(rBase, rFace, t)).fill()
         }
 
-        // Cara superior.
+        // Top face.
         let facePath = rr(face, rFace)
         grad([rgb(252, 253, 255), rgb(209, 219, 242)]).draw(in: facePath, angle: -90)
 
         NSGraphicsContext.saveGraphicsState()
         facePath.addClip()
-        // Ceja de luz arriba.
+        // Light catching the top edge.
         grad([rgb(255, 255, 255, 1), rgb(255, 255, 255, 0)])
             .draw(in: NSRect(x: face.minX, y: face.maxY - face.height * 0.26,
                              width: face.width, height: face.height * 0.26), angle: -90)
-        // Concavidad: sombra suave en el borde inferior, como un keycap esculpido.
+        // Concavity: a soft shadow along the bottom edge, like a sculpted keycap.
         grad([rgb(108, 122, 176, 0.38), rgb(108, 122, 176, 0)])
             .draw(in: NSRect(x: face.minX, y: face.minY,
                              width: face.width, height: face.height * 0.30), angle: 90)
         NSGraphicsContext.restoreGraphicsState()
 
-        // Filo claro del canto de la cara.
+        // Bright rim around the top face.
         rgb(255, 255, 255, 0.85).setStroke()
         facePath.lineWidth = max(1, side * 0.006)
         facePath.stroke()
 
-        // El rayo.
+        // The bolt.
         if let b = bolt(size: face.height * 0.60, gradient: grad([rgb(104, 92, 244), rgb(26, 102, 242)])) {
             let origin = NSPoint(x: face.midX - b.size.width/2, y: face.midY - b.size.height/2)
             NSGraphicsContext.saveGraphicsState()
@@ -156,7 +156,7 @@ func render(_ px: Int) -> Data {
             NSGraphicsContext.restoreGraphicsState()
         }
     } else {
-        // Tamaños pequeños: solo el rayo, grande y con contraste.
+        // Small sizes: just the bolt, large and high contrast.
         if let b = bolt(size: side * 0.72, gradient: grad([rgb(255, 255, 255), rgb(224, 234, 255)])) {
             let origin = NSPoint(x: box.midX - b.size.width/2, y: box.midY - b.size.height/2)
             NSGraphicsContext.saveGraphicsState()
@@ -166,7 +166,7 @@ func render(_ px: Int) -> Data {
         }
     }
 
-    // Filo de luz del borde del icono, discreto.
+    // A discreet light rim around the icon's edge.
     let rim = rr(box.insetBy(dx: side * 0.005, dy: side * 0.005), side * 0.2245)
     rim.lineWidth = max(1, side * 0.009)
     rgb(255, 255, 255, 0.30).setStroke()
@@ -183,4 +183,4 @@ for (base, scale) in [(16,1),(16,2),(32,1),(32,2),(128,1),(128,2),(256,1),(256,2
     let name = scale == 1 ? "icon_\(base)x\(base).png" : "icon_\(base)x\(base)@2x.png"
     try! render(base * scale).write(to: URL(fileURLWithPath: "\(iconset)/\(name)"))
 }
-print("iconset generado")
+print("iconset written")

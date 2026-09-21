@@ -1,7 +1,7 @@
 import Foundation
 
-/// Avisos entre la app y el motor. DistributedNotificationCenter basta:
-/// ambos procesos corren en la misma sesión de usuario y no hay sandbox.
+/// Messages between the app and the engine. DistributedNotificationCenter is enough:
+/// both processes run in the same user session and neither is sandboxed.
 enum IPC {
     enum Name: String {
         case settingsChanged = "com.keyboost.settings-changed"

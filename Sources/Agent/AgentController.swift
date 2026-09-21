@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 
-/// Orquesta todo: lee ajustes, decide turbo o reposo, publica estado.
+/// Ties everything together: reads settings, decides boost or idle, publishes status.
 final class AgentController {
     private let engine = BluetoothEngine()
     private let inventory = DeviceInventory()
@@ -16,14 +16,14 @@ final class AgentController {
     private var settingsStamp: Date?
 
     func start() {
-        // Nombres de dispositivos ausentes, para no mostrarlos como "desconocido".
+        // Names of absent devices, so they are not shown as "unknown".
         for device in AgentStatus.load().devices { knownNames[device.address] = device.name }
 
         observers.append(IPC.observe(.settingsChanged) { [weak self] in
             self?.reloadSettings()
         })
 
-        // Dormir el Mac suelta los enlaces: no tiene sentido mantener turbo con la tapa cerrada.
+        // Sleeping releases the links: boosting a closed laptop makes no sense.
         let workspace = NSWorkspace.shared.notificationCenter
         observers.append(workspace.addObserver(forName: NSWorkspace.willSleepNotification,
                                                object: nil, queue: .main) { [weak self] _ in
@@ -43,7 +43,7 @@ final class AgentController {
         Log.write("motor arrancado")
     }
 
-    /// Relee los ajustes y propaga lo que haya cambiado.
+    /// Re-reads settings and propagates whatever changed.
     private func reloadSettings() {
         let previousLevel = settings.latencyLevel
         settings = Settings.load()
@@ -60,8 +60,8 @@ final class AgentController {
         (try? FileManager.default.attributesOfItem(atPath: Paths.settings.path))?[.modificationDate] as? Date
     }
 
-    /// Red de seguridad: si el fichero cambia sin notificación (editado a mano, restaurado
-    /// de una copia), el motor se entera igual en el siguiente tick.
+    /// Safety net: if the file changes without a notification (hand-edited, restored from
+    /// a backup), the engine still notices on the next tick.
     private func reloadSettingsIfFileChanged() {
         let stamp = Self.settingsModified()
         guard stamp != settingsStamp else { return }
@@ -115,7 +115,7 @@ final class AgentController {
                                         kind: kind, present: true, boosted: boosted))
         }
 
-        // Configurados pero no visibles ahora: se conservan para que no desaparezcan de la lista.
+        // Configured but not visible right now: kept so they do not vanish from the list.
         let present = Set(live.map { $0.address.uppercased() })
         for address in settings.boostedAddresses where !present.contains(address.uppercased()) {
             devices.append(DeviceStatus(address: address,
@@ -129,7 +129,7 @@ final class AgentController {
                             apiAvailable: engine.apiAvailable, devices: devices, updated: Date()))
     }
 
-    /// Escribe solo si algo cambió, o cada 5 s para que la interfaz sepa que seguimos vivos.
+    /// Writes only when something changed, or every 5 s so the interface knows we are alive.
     private func publish(_ status: AgentStatus) {
         var changed = true
         if var previous = lastPublished {

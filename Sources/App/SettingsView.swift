@@ -16,8 +16,8 @@ struct SettingsView: View {
         .frame(minWidth: 540, minHeight: 540)
     }
 
-    /// El cuerpo sin el `ScrollView`. Se usa tal cual en `body` y, aparte, permite
-    /// renderizar la ventana a imagen con `ImageRenderer`, que no sabe dibujar scrolls.
+    /// The body without the `ScrollView`. Used as-is by `body`, and separately it lets the
+    /// window be rendered to an image with `ImageRenderer`, which cannot draw scroll views.
     var content: some View {
         VStack(alignment: .leading, spacing: 14) {
             if let problem = model.problem { warning(problem, level: .orange) }
@@ -29,7 +29,7 @@ struct SettingsView: View {
         .padding(20)
     }
 
-    /// Misma ventana, sin scroll: solo para la previsualización de desarrollo.
+    /// The same window without scrolling: for development previews only.
     var previewBody: some View {
         VStack(spacing: 0) {
             header
@@ -41,7 +41,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Cabecera
+    // MARK: - Header
 
     private var header: some View {
         HStack(spacing: 12) {
@@ -64,7 +64,7 @@ struct SettingsView: View {
         .padding(.horizontal, 20).padding(.vertical, 14)
     }
 
-    // MARK: - Bloques
+    // MARK: - Sections
 
     private var masterSwitch: some View {
         section(nil) {
@@ -179,10 +179,10 @@ struct SettingsView: View {
         .padding(.horizontal, 20).padding(.vertical, 12)
     }
 
-    // MARK: - Piezas reutilizables
+    // MARK: - Reusable pieces
 
-    /// Caja de sección. Hecha a mano en vez de con `GroupBox` porque este último
-    /// no se dibuja al renderizar la vista a imagen, y sin poder verla no se puede revisar.
+    /// A section box, hand-built rather than a `GroupBox`, because `GroupBox` does not draw
+    /// when the view is rendered to an image — and a UI you cannot see is a UI you cannot review.
     private func section<C: View>(_ title: String?, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if let title {
@@ -199,7 +199,7 @@ struct SettingsView: View {
         }
     }
 
-    /// Etiqueta a la izquierda con ancho fijo: así todos los controles quedan alineados.
+    /// Fixed-width label on the left, so every control lines up.
     private func row<C: View>(_ label: String, @ViewBuilder control: () -> C) -> some View {
         HStack(spacing: 12) {
             Text(label)

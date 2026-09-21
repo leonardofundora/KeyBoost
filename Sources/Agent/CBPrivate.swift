@@ -1,17 +1,17 @@
 import CoreBluetooth
 import Foundation
 
-/// API privada de CoreBluetooth en rol central.
+/// Private CoreBluetooth API, central role.
 ///
-/// Verificado en macOS 27.2 (26B5086k). Los tres selectores existen; cada llamada va
-/// protegida por `responds(to:)` para degradar sin fallar si Apple los retira.
+/// Verified on macOS 27.2 (26B5086k). All three selectors exist; every call is guarded
+/// with `responds(to:)` so the app degrades instead of crashing if Apple removes them.
 ///
-/// - `setDesiredConnectionLatency:forPeripheral:` es lo que fuerza `peripheral latency: 0`.
-/// - `retrieveConnectedPeripheralsWithServices:allowAll:` con servicios vacios y allowAll:YES
-///   es la unica forma de ver los HID del sistema: el filtro publico por 0x1812 devuelve 0
-///   porque macOS no cachea su GATT para clientes de terceros.
-/// - `retrieveAddressForPeripheral:` da la direccion fisica, que es estable frente a
-///   re-emparejamientos (el UUID de CoreBluetooth no lo es).
+/// - `setDesiredConnectionLatency:forPeripheral:` is what forces `peripheral latency: 0`.
+/// - `retrieveConnectedPeripheralsWithServices:allowAll:` with an empty service list and
+///   allowAll:YES is the only way to see the system's HID devices: the public filter by
+///   0x1812 returns 0, because macOS does not cache their GATT for third-party clients.
+/// - `retrieveAddressForPeripheral:` gives the hardware address, which survives re-pairing
+///   (the CoreBluetooth UUID does not).
 @objc private protocol CBCentralPrivate {
     @objc(setDesiredConnectionLatency:forPeripheral:)
     func setDesiredConnectionLatency(_ latency: Int, forPeripheral peripheral: CBPeripheral)
@@ -23,8 +23,8 @@ import Foundation
     func retrieveAddress(forPeripheral peripheral: CBPeripheral) -> NSData?
 }
 
-// NSSelectorFromString y no #selector: estos selectores son privados y no existen
-// en ninguna cabecera pública contra la que el compilador pueda comprobarlos.
+// NSSelectorFromString rather than #selector: these selectors are private and appear in
+// no public header the compiler could check them against.
 private let selSetLatency = NSSelectorFromString("setDesiredConnectionLatency:forPeripheral:")
 private let selRetrieveAll = NSSelectorFromString("retrieveConnectedPeripheralsWithServices:allowAll:")
 private let selAddress = NSSelectorFromString("retrieveAddressForPeripheral:")
@@ -32,7 +32,7 @@ private let selAddress = NSSelectorFromString("retrieveAddressForPeripheral:")
 extension CBCentralManager {
     private var priv: CBCentralPrivate { unsafeBitCast(self, to: CBCentralPrivate.self) }
 
-    /// true si esta version de macOS expone el selector que hace el trabajo.
+    /// True when this version of macOS still exposes the selector that does the work.
     var kbSupportsLowLatency: Bool { responds(to: selSetLatency) }
 
     /// `level`: 0 = low (10–30 ms), 1 = medium (100–120 ms), 2 = high (290–320 ms).

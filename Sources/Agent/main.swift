@@ -1,6 +1,6 @@
 import AppKit
 
-/// Motor de KeyBoost. Sin Dock, sin ventanas. Ver el spec en docs/superpowers/specs/.
+/// The KeyBoost engine. No Dock icon, no windows. See docs/DESIGN.md.
 final class AgentAppDelegate: NSObject, NSApplicationDelegate {
     private let controller = AgentController()
     func applicationDidFinishLaunching(_ notification: Notification) { controller.start() }

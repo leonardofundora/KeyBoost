@@ -2,7 +2,7 @@ import Combine
 import Foundation
 import SwiftUI
 
-/// Puente entre los ficheros compartidos y la vista.
+/// Bridge between the shared files and the view.
 final class Model: ObservableObject {
     @Published var settings: Settings = .load()
     @Published var status: AgentStatus = .load()
@@ -15,7 +15,7 @@ final class Model: ObservableObject {
         observer = IPC.observe(.statusChanged) { [weak self] in
             self?.status = .load()
         }
-        // Red de seguridad por si se pierde una notificación.
+        // Safety net in case a notification is missed.
         timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             self?.status = .load()
         }
@@ -40,7 +40,7 @@ final class Model: ObservableObject {
         launchAtLogin = LoginItem.isEnabled
     }
 
-    /// Qué hay que contarle al usuario, si es que hay algo.
+    /// What the user needs to be told, if anything.
     var problem: String? {
         if let issue = status.bluetooth.problem { return issue }
         if !status.agentAlive {
@@ -71,13 +71,13 @@ final class Model: ObservableObject {
         Settings.latencyChoices.first { $0.level == settings.latencyLevel }
     }
 
-    /// Línea bajo el desplegable de latencia: "intervalo … · peor caso ~N ms".
+    /// The line under the latency picker: "… interval · worst case ~N ms".
     var latencyDetail: String? {
         guard let choice = latencyChoice else { return nil }
         return L("%@ · worst case ~%d ms", choice.detail, choice.worstCaseMs)
     }
 
-    /// Advertencia proporcional: el nivel más alto es literalmente peor que no usar la app.
+    /// A warning sized to the risk: the highest level is literally worse than not using the app.
     var latencyWarning: String? {
         guard let choice = latencyChoice, !choice.isSafe else { return nil }
         return choice.level == 2
@@ -85,7 +85,7 @@ final class Model: ObservableObject {
             : L("Worst case ~%d ms instead of 30. Noticeable while typing, but easier on the battery.", choice.worstCaseMs)
     }
 
-    /// Texto de estado por dispositivo, en la columna derecha de la lista.
+    /// Per-device status text, in the right-hand column of the list.
     func detail(for device: DeviceStatus) -> String {
         if !device.present { return L("away") }
         if !settings.boosts(device.address) { return "—" }

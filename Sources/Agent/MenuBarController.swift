@@ -1,7 +1,7 @@
 import AppKit
 
-/// El icono opcional de la barra. Lo crea el motor, no la interfaz: por eso sigue
-/// ahí con la app cerrada, y por eso se puede quitar sin perder la aceleración.
+/// The optional menu bar icon. The engine owns it, not the interface: that is why it
+/// stays put with the app closed, and why hiding it costs you nothing.
 final class MenuBarController {
     private let item: NSStatusItem
     private let onToggleEnabled: () -> Void

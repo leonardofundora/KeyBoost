@@ -32,6 +32,11 @@ final class AgentController {
         })
         observers.append(workspace.addObserver(forName: NSWorkspace.didWakeNotification,
                                                object: nil, queue: .main) { [weak self] _ in
+            // macOS reapplies its own LEHID profile across sleep, so the request has to go
+            // out again at once. Without clearing the throttle the keyboard would sit on
+            // latency 22 for up to 30 seconds after every wake.
+            Log.write("el Mac despierta, reaplicando latencia")
+            self?.engine.invalidateRequests()
             self?.tick()
         })
 

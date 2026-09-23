@@ -92,7 +92,12 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
         default:             state = .unknown
         }
         Log.write("bluetooth: \(state.rawValue)")
-        if state != .on { held.removeAll() }
+        // The radio going down drops everything we were holding, and whatever we ask for
+        // next has to be sent fresh rather than waiting out the throttle.
+        if state != .on {
+            held.removeAll()
+            lastRequest.removeAll()
+        }
         onStateChange?()
     }
 

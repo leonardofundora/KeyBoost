@@ -109,7 +109,7 @@ final class Model: ObservableObject {
     }
 
     var lossText: String {
-        guard let loss = status.lossPercent else { return "—" }
+        guard let loss = status.lossPercent else { return L("too little traffic to measure") }
         return String(format: "%.1f %%", loss)
     }
 

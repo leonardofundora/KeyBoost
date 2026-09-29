@@ -20,6 +20,8 @@ final class LinkMonitor {
     private var sampling = false
     private let queue = DispatchQueue(label: "keyboost.linkmonitor")
     private var radioChanges: [Date] = []
+    /// Below this many packets in the window, the loss percentage is statistically empty.
+    private static let minimumPacketsForLoss = 200
 
     /// Call whenever the Bluetooth radio changes state; the count feeds the diagnosis.
     func noteRadioStateChange() {
@@ -32,13 +34,19 @@ final class LinkMonitor {
     func noteRSSI(_ value: Int) { current.rssi = value }
 
     /// Reads the last minute of link statistics and appends a row to the history.
-    func sampleAndRecord(boosted: Bool, bluetooth: String, deviceName: String) {
+    /// - Parameter measureLoss: false while the link is too freshly established for the
+    ///   figure to mean anything. The reading is cleared rather than left stale.
+    func sampleAndRecord(boosted: Bool, measureLoss: Bool, bluetooth: String, deviceName: String) {
         queue.async { [weak self] in
             guard let self, !self.sampling else { return }
             self.sampling = true
             defer { self.sampling = false }
 
-            if let loss = Self.readPacketLoss() { self.current.lossPercent = loss }
+            if measureLoss {
+                if let loss = Self.readPacketLoss() { self.current.lossPercent = loss }
+            } else {
+                self.current.lossPercent = nil
+            }
             self.append(boosted: boosted, bluetooth: bluetooth, device: deviceName)
         }
     }
@@ -71,8 +79,12 @@ final class LinkMonitor {
                 }
             }
         }
+        // A percentage over a handful of packets is noise, not a measurement. While nobody
+        // is typing the link carries almost nothing, and 11 failures out of 14 reads as
+        // 79 % when it means nothing at all. Below the threshold, report no figure rather
+        // than a frightening one.
         let total = ok + failed
-        return total > 0 ? Double(failed) * 100 / Double(total) : nil
+        return total >= Self.minimumPacketsForLoss ? Double(failed) * 100 / Double(total) : nil
     }
 
     private func append(boosted: Bool, bluetooth: String, device: String) {

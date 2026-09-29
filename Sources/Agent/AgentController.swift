@@ -17,6 +17,9 @@ final class AgentController {
     private var settingsStamp: Date?
     private var lastRSSISample: Date = .distantPast
     private var lastHistoryWrite: Date = .distantPast
+    /// When the link last became continuously boosted. A loss figure measured across a
+    /// reconnect counts the silence as lost packets and reports a fault that is not there.
+    private var boostedSince: Date?
 
     func start() {
         // Names of absent devices, so they are not shown as "unknown".
@@ -139,13 +142,18 @@ final class AgentController {
         // whole point: an intermittent fault has to leave a trace, or the next time it shows
         // up all anyone can do is blame whatever changed since.
         let now = Date()
+        if anyBoosted { if boostedSince == nil { boostedSince = now } } else { boostedSince = nil }
+
         if now.timeIntervalSince(lastRSSISample) >= 10 {
             lastRSSISample = now
             engine.sampleRSSI()
         }
         if now.timeIntervalSince(lastHistoryWrite) >= 60 {
             lastHistoryWrite = now
-            monitor.sampleAndRecord(boosted: anyBoosted,
+            // Only trust the loss figure once the link has been up for longer than the
+            // window it is measured over. Otherwise the reconnect itself reads as a fault.
+            let settled = boostedSince.map { now.timeIntervalSince($0) >= 70 } ?? false
+            monitor.sampleAndRecord(boosted: anyBoosted, measureLoss: settled,
                                     bluetooth: engine.state.rawValue,
                                     deviceName: devices.first(where: \.boosted)?.name ?? "-")
         }

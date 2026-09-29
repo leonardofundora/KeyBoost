@@ -23,7 +23,7 @@ final class AgentController {
 
     func start() {
         // Names of absent devices, so they are not shown as "unknown".
-        for device in AgentStatus.load().devices { knownNames[device.address] = device.name }
+        for device in AgentStatus.load().devices { knownNames[device.address.uppercased()] = device.name }
 
         observers.append(IPC.observe(.settingsChanged) { [weak self] in
             self?.reloadSettings()
@@ -102,25 +102,42 @@ final class AgentController {
         }
     }
 
+    /// Whether a live device is one the user asked for.
+    ///
+    /// An address match is definitive. A name match is a fallback for the one case it exists
+    /// to cover — the device came back under a new address — so it only applies when none of
+    /// that record's known addresses is currently live. Without that condition a second
+    /// keyboard reporting the same name as the first would be adopted silently.
+    private func isWanted(_ device: LiveDevice, live: [LiveDevice]) -> Bool {
+        guard settings.enabled else { return false }
+        if settings.boosts(address: device.address) { return true }
+        guard device.hasRealName, let record = settings.record(forName: device.name) else { return false }
+        return !record.addresses.contains { alias in
+            live.contains { $0.address.caseInsensitiveCompare(alias) == .orderedSame }
+        }
+    }
+
     private func tick() {
         reloadSettingsIfFileChanged()
         let live = engine.liveDevices()
         inventory.refreshIfNeeded(addresses: live.map(\.address))
-        for device in live { knownNames[device.address] = device.name }
+        for device in live { knownNames[device.address.uppercased()] = device.name }
 
         var devices: [DeviceStatus] = []
         var anyBoosted = false
+        var learnedSomething = false
 
         for device in live {
             let kind = inventory.kind(for: device.address)
-            let wanted = settings.enabled && settings.boosts(device.address, name: device.name)
-            // A device recognised by one identifier teaches us the other, so the next power
-            // cycle cannot drop it out of the set.
-            if wanted, settings.learn(address: device.address, name: device.name) {
-                Log.write("aprendida identidad de \(device.name): \(device.address)")
-                settings.save()
-            }
+            let wanted = isWanted(device, live: live)
             if wanted {
+                // Recognising a device by one identifier teaches us the other, so the next
+                // power cycle cannot drop it out of the set.
+                if settings.learn(address: device.address, name: device.name,
+                                  nameIsReal: device.hasRealName) {
+                    Log.write("aprendida identidad de \(device.name): \(device.address)")
+                    learnedSomething = true
+                }
                 let idle = ActivityMonitor.idleSeconds(for: kind)
                 let keepAwake = settings.idleReleaseSeconds == 0
                     || idle < Double(settings.idleReleaseSeconds)
@@ -131,19 +148,28 @@ final class AgentController {
             let boosted = engine.isBoosted(device.address)
             anyBoosted = anyBoosted || boosted
             devices.append(DeviceStatus(address: device.address, name: device.name,
-                                        kind: kind, present: true, boosted: boosted))
+                                        kind: kind, present: true, wanted: wanted, boosted: boosted))
         }
 
-        // Configured but not visible right now: kept so they do not vanish from the list.
-        let present = Set(live.map { $0.address.uppercased() })
-        for address in settings.boostedAddresses where !present.contains(address.uppercased()) {
-            // Skip an address whose device is present under a different one.
-            if let name = knownNames[address],
-               live.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) { continue }
-            devices.append(DeviceStatus(address: address,
-                                        name: knownNames[address] ?? address,
+        // One write per tick, not one per device: each save costs a file write, a notification,
+        // a reload and a recursive tick.
+        if learnedSomething {
+            settings.save()
+            settingsStamp = Self.settingsModified()
+        }
+
+        // Configured but not visible: one row per record, so a device with several known
+        // addresses cannot render twice.
+        for record in settings.boosted {
+            let liveHere = live.contains { device in
+                record.matches(address: device.address)
+                    || (device.hasRealName && record.matches(name: device.name))
+            }
+            guard !liveHere, let address = record.addresses.first ?? nil else { continue }
+            let name = record.name.isEmpty ? (knownNames[address.uppercased()] ?? address) : record.name
+            devices.append(DeviceStatus(address: address, name: name,
                                         kind: inventory.kind(for: address),
-                                        present: false, boosted: false))
+                                        present: false, wanted: true, boosted: false))
         }
         devices.sort { ($0.present ? 0 : 1, $0.name.lowercased()) < ($1.present ? 0 : 1, $1.name.lowercased()) }
 

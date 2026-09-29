@@ -81,3 +81,4 @@
 "%@ %% packet loss. Usable, but there is interference around." = "%@ %% de pérdida. Usable, pero hay interferencia alrededor.";
 "Signal at %d dBm, weaker than it should be." = "Señal a %d dBm, más débil de lo que debería.";
 "too little traffic to measure" = "poco tráfico para medirlo";
+"Device %@" = "Dispositivo %@";

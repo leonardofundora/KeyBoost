@@ -6,6 +6,10 @@ struct LiveDevice {
     let peripheral: CBPeripheral
     let address: String
     let name: String
+    /// False when `name` is the placeholder built from the address. Such a name changes
+    /// with the address, so storing it would match nothing after the very rotation that
+    /// name matching exists to survive.
+    let hasRealName: Bool
 }
 
 /// Owns the `CBCentralManager`. Discovers devices and holds or releases the link.
@@ -40,8 +44,10 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripheralDel
         guard state == .on else { return [] }
         return central.kbConnectedPeripherals().compactMap { p in
             guard let address = central.kbAddress(of: p) else { return nil }
+            let advertised = p.name
             return LiveDevice(peripheral: p, address: address,
-                              name: p.name ?? "Dispositivo \(address.suffix(5))")
+                              name: advertised ?? L("Device %@", String(address.suffix(5))),
+                              hasRealName: advertised?.isEmpty == false)
         }
     }
 

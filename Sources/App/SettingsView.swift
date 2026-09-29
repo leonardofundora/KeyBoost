@@ -95,7 +95,7 @@ struct SettingsView: View {
                     ForEach(model.status.devices) { device in
                         HStack(spacing: 10) {
                             Toggle("", isOn: Binding(
-                                get: { model.settings.boosts(device.address, name: device.name) },
+                                get: { device.wanted },
                                 set: { model.setBoosted(device, $0) }))
                                 .labelsHidden()
                                 .disabled(!model.settings.enabled)

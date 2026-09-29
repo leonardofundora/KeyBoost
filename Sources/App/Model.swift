@@ -8,16 +8,22 @@ final class Model: ObservableObject {
     @Published var status: AgentStatus = .load()
     @Published var launchAtLogin: Bool = LoginItem.isEnabled
 
-    private var observer: NSObjectProtocol?
+    private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
 
     init() {
-        observer = IPC.observe(.statusChanged) { [weak self] in
+        observers.append(IPC.observe(.statusChanged) { [weak self] in
             self?.status = .load()
-        }
+        })
+        // The engine writes settings too, when it learns a device's second address. Without
+        // this, the next edit here would write back a stale copy and drop what it learned.
+        observers.append(IPC.observe(.settingsChanged) { [weak self] in
+            self?.settings = .load()
+        })
         // Safety net in case a notification is missed.
         timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             self?.status = .load()
+            self?.settings = .load()
         }
     }
 
@@ -31,7 +37,8 @@ final class Model: ObservableObject {
     func setBoosted(_ device: DeviceStatus, _ on: Bool) {
         edit { settings in
             if on {
-                _ = settings.learn(address: device.address, name: device.name)
+                settings.start(address: device.address, name: device.name,
+                               nameIsReal: !device.name.isEmpty && device.name != device.address)
             } else {
                 settings.forget(address: device.address, name: device.name)
             }
@@ -119,7 +126,7 @@ final class Model: ObservableObject {
     /// Per-device status text, in the right-hand column of the list.
     func detail(for device: DeviceStatus) -> String {
         if !device.present { return L("away") }
-        if !settings.boosts(device.address, name: device.name) { return "—" }
+        if !device.wanted { return "—" }
         if !settings.enabled { return L("off") }
         return device.boosted ? L("latency 0") : L("idle")
     }

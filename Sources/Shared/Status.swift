@@ -33,8 +33,28 @@ struct DeviceStatus: Codable, Equatable, Identifiable {
     var kind: DeviceKind
     /// Present means visible right now. An absent device stays in the configuration.
     var present: Bool
+    /// The user asked for this device. Decided by the engine, which is the only place that
+    /// knows which devices are live — a name only identifies a device when its usual
+    /// address is absent. The interface reads this rather than re-deriving it.
+    var wanted: Bool
+    /// Holding a connection and running at the requested latency right now.
     var boosted: Bool
     var id: String { address }
+
+    init(address: String, name: String, kind: DeviceKind, present: Bool, wanted: Bool, boosted: Bool) {
+        self.address = address; self.name = name; self.kind = kind
+        self.present = present; self.wanted = wanted; self.boosted = boosted
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        address = try c.decode(String.self, forKey: .address)
+        name = try c.decode(String.self, forKey: .name)
+        kind = try c.decodeIfPresent(DeviceKind.self, forKey: .kind) ?? .other
+        present = try c.decodeIfPresent(Bool.self, forKey: .present) ?? false
+        wanted = try c.decodeIfPresent(Bool.self, forKey: .wanted) ?? false
+        boosted = try c.decodeIfPresent(Bool.self, forKey: .boosted) ?? false
+    }
 }
 
 struct AgentStatus: Codable, Equatable {
@@ -52,6 +72,33 @@ struct AgentStatus: Codable, Equatable {
     /// sleeping or cycling Bluetooth, which no amount of latency tuning can compensate for.
     var radioCyclesLastHour: Int = 0
     var updated: Date = .init()
+
+    init() {}
+
+    /// Same reasoning as `Settings.init(from:)`: a field added in a later version must not
+    /// make an older file throw, because the caller turns a throw into a blank object.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bluetooth = try c.decodeIfPresent(BluetoothState.self, forKey: .bluetooth) ?? .unknown
+        active = try c.decodeIfPresent(Bool.self, forKey: .active) ?? false
+        apiAvailable = try c.decodeIfPresent(Bool.self, forKey: .apiAvailable) ?? true
+        devices = try c.decodeIfPresent([DeviceStatus].self, forKey: .devices) ?? []
+        rssi = try c.decodeIfPresent(Int.self, forKey: .rssi)
+        lossPercent = try c.decodeIfPresent(Double.self, forKey: .lossPercent)
+        radioCyclesLastHour = try c.decodeIfPresent(Int.self, forKey: .radioCyclesLastHour) ?? 0
+        updated = try c.decodeIfPresent(Date.self, forKey: .updated) ?? .distantPast
+    }
+
+    init(bluetooth: BluetoothState, active: Bool, apiAvailable: Bool, devices: [DeviceStatus],
+         rssi: Int?, lossPercent: Double?, radioCyclesLastHour: Int, updated: Date) {
+        self.bluetooth = bluetooth; self.active = active; self.apiAvailable = apiAvailable
+        self.devices = devices; self.rssi = rssi; self.lossPercent = lossPercent
+        self.radioCyclesLastHour = radioCyclesLastHour; self.updated = updated
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case bluetooth, active, apiAvailable, devices, rssi, lossPercent, radioCyclesLastHour, updated
+    }
 
     static func load() -> AgentStatus {
         JSONStore.read(AgentStatus.self, from: Paths.status) ?? AgentStatus()

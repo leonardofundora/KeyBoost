@@ -37,7 +37,7 @@ final class MenuBarController {
         header.isEnabled = false
         menu.addItem(header)
 
-        let chosen = status.devices.filter { settings.boosts($0.address) }
+        let chosen = status.devices.filter { settings.boosts($0.address, name: $0.name) }
         if !chosen.isEmpty {
             menu.addItem(.separator())
             for device in chosen {

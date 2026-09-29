@@ -113,7 +113,13 @@ final class AgentController {
 
         for device in live {
             let kind = inventory.kind(for: device.address)
-            let wanted = settings.enabled && settings.boosts(device.address)
+            let wanted = settings.enabled && settings.boosts(device.address, name: device.name)
+            // A device recognised by one identifier teaches us the other, so the next power
+            // cycle cannot drop it out of the set.
+            if wanted, settings.learn(address: device.address, name: device.name) {
+                Log.write("aprendida identidad de \(device.name): \(device.address)")
+                settings.save()
+            }
             if wanted {
                 let idle = ActivityMonitor.idleSeconds(for: kind)
                 let keepAwake = settings.idleReleaseSeconds == 0
@@ -131,6 +137,9 @@ final class AgentController {
         // Configured but not visible right now: kept so they do not vanish from the list.
         let present = Set(live.map { $0.address.uppercased() })
         for address in settings.boostedAddresses where !present.contains(address.uppercased()) {
+            // Skip an address whose device is present under a different one.
+            if let name = knownNames[address],
+               live.contains(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) { continue }
             devices.append(DeviceStatus(address: address,
                                         name: knownNames[address] ?? address,
                                         kind: inventory.kind(for: address),

@@ -28,10 +28,13 @@ final class Model: ObservableObject {
         copy.save()
     }
 
-    func setBoosted(_ address: String, _ on: Bool) {
+    func setBoosted(_ device: DeviceStatus, _ on: Bool) {
         edit { settings in
-            settings.boostedAddresses.removeAll { $0.caseInsensitiveCompare(address) == .orderedSame }
-            if on { settings.boostedAddresses.append(address) }
+            if on {
+                _ = settings.learn(address: device.address, name: device.name)
+            } else {
+                settings.forget(address: device.address, name: device.name)
+            }
         }
     }
 
@@ -116,7 +119,7 @@ final class Model: ObservableObject {
     /// Per-device status text, in the right-hand column of the list.
     func detail(for device: DeviceStatus) -> String {
         if !device.present { return L("away") }
-        if !settings.boosts(device.address) { return "—" }
+        if !settings.boosts(device.address, name: device.name) { return "—" }
         if !settings.enabled { return L("off") }
         return device.boosted ? L("latency 0") : L("idle")
     }

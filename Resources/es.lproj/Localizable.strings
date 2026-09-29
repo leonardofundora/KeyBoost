@@ -63,3 +63,20 @@
 "KeyBoost — idle" = "KeyBoost — en reposo";
 "Open KeyBoost…" = "Abrir KeyBoost…";
 "Hide this icon" = "Ocultar este icono";
+
+/* Salud del enlace */
+"Link health" = "Salud del enlace";
+"Signal" = "Señal";
+"Packet loss" = "Pérdida de paquetes";
+"Radio drops (1 h)" = "Cortes de radio (1 h)";
+"History…" = "Historial…";
+"Good" = "Buena";
+"Fair" = "Regular";
+"Poor" = "Mala";
+"not measured while idle" = "no se mide en reposo";
+"Recorded every minute, so a fault that comes and goes leaves a trail." = "Se registra cada minuto, para que un fallo intermitente deje rastro.";
+"The Bluetooth radio went down %d times in the last hour. Check whether the Mac keeps sleeping." = "La radio Bluetooth se ha caído %d veces en la última hora. Comprueba si el Mac se está durmiendo.";
+"%@ %% of the keyboard's packets are not reaching the Mac. Something nearby is transmitting on 2.4 GHz." = "El %@ %% de los paquetes del teclado no llega al Mac. Algo cerca está emitiendo en 2,4 GHz.";
+"Signal at %d dBm. The keyboard is too far away, or something is in the way." = "Señal a %d dBm. El teclado está demasiado lejos o hay algo en medio.";
+"%@ %% packet loss. Usable, but there is interference around." = "%@ %% de pérdida. Usable, pero hay interferencia alrededor.";
+"Signal at %d dBm, weaker than it should be." = "Señal a %d dBm, más débil de lo que debería.";

@@ -12,7 +12,7 @@ struct LiveDevice {
 ///
 /// Holding the connection is what sustains `peripheral latency: 0`; the moment it is
 /// released, `bluetoothd` reverts to its `LEHID-15ms` profile with latency 22.
-final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
+final class BluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private var central: CBCentralManager!
     /// Addresses we want kept boosted, and their peripherals.
     private var held: [String: CBPeripheral] = [:]
@@ -24,6 +24,10 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
     var onStateChange: (() -> Void)?
     /// The `CBConnectionLatency` level to request. Set by the controller from settings.
     var latencyLevel: Int = 0
+    /// Delivered whenever a signal strength reading comes back.
+    var onRSSI: ((Int) -> Void)?
+    /// Fired when the radio powers up or down, so the monitor can count the cycles.
+    var onRadioStateChange: (() -> Void)?
 
     override init() {
         super.init()
@@ -52,6 +56,7 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
     /// each tick worked, but sent bluetoothd one XPC message per second for nothing.
     func boost(_ device: LiveDevice) {
         guard state == .on else { return }
+        device.peripheral.delegate = self        // needed for the RSSI callback
         held[device.address] = device.peripheral
         let connected = device.peripheral.state == .connected
         let due = Date().timeIntervalSince(lastRequest[device.address] ?? .distantPast) >= requestInterval
@@ -71,6 +76,19 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
             central.cancelPeripheralConnection(p)
         }
         Log.write("soltado \(address)")
+    }
+
+    /// Asks the controller's held peripherals for their signal strength.
+    /// Only works while we hold the connection, which is exactly when it matters.
+    func sampleRSSI() {
+        for peripheral in held.values where peripheral.state == .connected {
+            peripheral.readRSSI()
+        }
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        guard error == nil else { return }
+        onRSSI?(RSSI.intValue)
     }
 
     /// Forgets the throttle so the next tick re-sends the request.
@@ -98,6 +116,7 @@ final class BluetoothEngine: NSObject, CBCentralManagerDelegate {
             held.removeAll()
             lastRequest.removeAll()
         }
+        onRadioStateChange?()
         onStateChange?()
     }
 

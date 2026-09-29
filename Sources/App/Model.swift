@@ -85,6 +85,34 @@ final class Model: ObservableObject {
             : L("Worst case ~%d ms instead of 30. Noticeable while typing, but easier on the battery.", choice.worstCaseMs)
     }
 
+    var healthLabel: String {
+        switch status.health {
+        case .good: return L("Good")
+        case .fair: return L("Fair")
+        case .poor: return L("Poor")
+        case .unknown: return "—"
+        }
+    }
+
+    var healthColor: Color {
+        switch status.health {
+        case .good: return .green
+        case .fair: return .orange
+        case .poor: return .red
+        case .unknown: return .secondary
+        }
+    }
+
+    var signalText: String {
+        guard let rssi = status.rssi else { return L("not measured while idle") }
+        return "\(rssi) dBm"
+    }
+
+    var lossText: String {
+        guard let loss = status.lossPercent else { return "—" }
+        return String(format: "%.1f %%", loss)
+    }
+
     /// Per-device status text, in the right-hand column of the list.
     func detail(for device: DeviceStatus) -> String {
         if !device.present { return L("away") }

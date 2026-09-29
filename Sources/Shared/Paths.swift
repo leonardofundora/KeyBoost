@@ -11,6 +11,7 @@ enum Paths {
     static var settings: URL { support.appendingPathComponent("settings.json") }
     static var status:   URL { support.appendingPathComponent("status.json") }
     static var log:      URL { support.appendingPathComponent("keyboost.log") }
+    static var history:  URL { support.appendingPathComponent("link-history.csv") }
 
     static let launchAgentLabel = "com.keyboost.agent"
     static var launchAgentPlist: URL {

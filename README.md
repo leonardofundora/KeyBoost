@@ -113,6 +113,24 @@ your next keystroke.
 The trade: the **first keystroke after an idle period arrives late**, then everything is instant.
 Set *Soltar tras inactividad* to **Nunca soltar** if you would rather never see that.
 
+## When it still feels slow
+
+KeyBoost records the link's health every minute — signal strength, packet loss, and how often
+the Bluetooth radio went down — to `~/Library/Application Support/KeyBoost/link-history.csv`.
+The window shows the current reading and says what is wrong in one line.
+
+This exists because the hard faults are intermittent. Diagnosing one from a snapshot taken an
+hour later means blaming whatever happens to have changed since, which is how you end up
+accusing an innocent USB dock. Three separate causes turned up during development, and only the
+history distinguishes them:
+
+| What you see | What it means |
+|---|---|
+| Many **radio drops** in an hour | The Mac keeps sleeping and cycling Bluetooth. Check `pmset -g custom`; `sleep 1` on battery will do this. |
+| High **packet loss**, decent signal | Something nearby is transmitting on 2.4 GHz. |
+| Weak **signal** (below −70 dBm) | Distance or an obstruction. |
+| All three fine, still slow | Not the link. Compare against your Mac's built-in keyboard. |
+
 ## How it works
 
 Two bundles. `KeyBoost.app` is the interface — open it, change things, close it, and it disappears

@@ -8,7 +8,7 @@
 import AppKit
 import SwiftUI
 
-let contentSize = NSSize(width: 560, height: 628)
+let contentSize = NSSize(width: 560, height: 782)
 let pad: CGFloat = 60
 let padBottom: CGFloat = 76   // el desenfoque de la sombra cae hacia abajo
 let titleBar: CGFloat = 28

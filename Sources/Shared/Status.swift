@@ -44,6 +44,13 @@ struct AgentStatus: Codable, Equatable {
     /// Whether the private selector exists on this version of macOS.
     var apiAvailable: Bool = true
     var devices: [DeviceStatus] = []
+    /// Signal strength of the boosted device, when we hold a connection to read it.
+    var rssi: Int?
+    /// Share of the keyboard's packets the Mac failed to receive, over the last minute.
+    var lossPercent: Double?
+    /// How often the radio went down in the last hour. A high count means the Mac is
+    /// sleeping or cycling Bluetooth, which no amount of latency tuning can compensate for.
+    var radioCyclesLastHour: Int = 0
     var updated: Date = .init()
 
     static func load() -> AgentStatus {
@@ -57,4 +64,37 @@ struct AgentStatus: Codable, Equatable {
 
     /// The engine writes every few seconds; a long silence means it is not running.
     var agentAlive: Bool { Date().timeIntervalSince(updated) < 15 }
+
+    enum Health: String, Codable { case good, fair, poor, unknown }
+
+    /// A verdict on the link, from the two numbers that actually predict how it feels.
+    /// Thresholds come from measurements on a link that worked: -49 dBm with 0 % loss.
+    var health: Health {
+        if radioCyclesLastHour >= 10 { return .poor }
+        guard let rssi else { return .unknown }
+        let loss = lossPercent ?? 0
+        if loss > 10 || rssi < -75 { return .poor }
+        if loss > 2 || rssi < -65 { return .fair }
+        return .good
+    }
+
+    /// What is wrong with the link, in one line, or nil when nothing is.
+    var healthProblem: String? {
+        if radioCyclesLastHour >= 10 {
+            return L("The Bluetooth radio went down %d times in the last hour. Check whether the Mac keeps sleeping.", radioCyclesLastHour)
+        }
+        if let loss = lossPercent, loss > 10 {
+            return L("%@ %% of the keyboard's packets are not reaching the Mac. Something nearby is transmitting on 2.4 GHz.", String(format: "%.0f", loss))
+        }
+        if let rssi, rssi < -75 {
+            return L("Signal at %d dBm. The keyboard is too far away, or something is in the way.", rssi)
+        }
+        if let loss = lossPercent, loss > 2 {
+            return L("%@ %% packet loss. Usable, but there is interference around.", String(format: "%.0f", loss))
+        }
+        if let rssi, rssi < -65 {
+            return L("Signal at %d dBm, weaker than it should be.", rssi)
+        }
+        return nil
+    }
 }

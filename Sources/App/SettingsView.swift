@@ -23,6 +23,7 @@ struct SettingsView: View {
             if let problem = model.problem { warning(problem, level: .orange) }
             masterSwitch
             devices
+            linkHealth
             performance
             options
         }
@@ -108,6 +109,46 @@ struct SettingsView: View {
                                 .font(.caption).monospacedDigit()
                                 .foregroundStyle(device.boosted ? Color.green : Color.secondary)
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /// What the link is actually doing. Without this, an intermittent fault leaves no
+    /// trace and the only way to diagnose it is to guess at whatever changed recently.
+    private var linkHealth: some View {
+        section(L("Link health")) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text(L("Signal")).frame(width: labelWidth, alignment: .leading)
+                    Text(model.signalText).monospacedDigit()
+                    Spacer()
+                    Text(model.healthLabel)
+                        .font(.callout).bold()
+                        .padding(.horizontal, 9).padding(.vertical, 3)
+                        .background(Capsule().fill(model.healthColor.opacity(0.16)))
+                        .foregroundStyle(model.healthColor)
+                }
+                HStack {
+                    Text(L("Packet loss")).frame(width: labelWidth, alignment: .leading)
+                    Text(model.lossText).monospacedDigit()
+                    Spacer()
+                }
+                if model.status.radioCyclesLastHour > 0 {
+                    HStack {
+                        Text(L("Radio drops (1 h)")).frame(width: labelWidth, alignment: .leading)
+                        Text("\(model.status.radioCyclesLastHour)").monospacedDigit()
+                        Spacer()
+                    }
+                }
+                if let issue = model.status.healthProblem {
+                    warning(issue, level: model.status.health == .poor ? .red : .orange)
+                }
+                HStack {
+                    caption(L("Recorded every minute, so a fault that comes and goes leaves a trail."))
+                    Button(L("History…")) {
+                        NSWorkspace.shared.selectFile(Paths.history.path, inFileViewerRootedAtPath: "")
                     }
                 }
             }

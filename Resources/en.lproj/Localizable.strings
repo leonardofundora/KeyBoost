@@ -63,3 +63,20 @@
 "KeyBoost — idle" = "KeyBoost — idle";
 "Open KeyBoost…" = "Open KeyBoost…";
 "Hide this icon" = "Hide this icon";
+
+/* Link health */
+"Link health" = "Link health";
+"Signal" = "Signal";
+"Packet loss" = "Packet loss";
+"Radio drops (1 h)" = "Radio drops (1 h)";
+"History…" = "History…";
+"Good" = "Good";
+"Fair" = "Fair";
+"Poor" = "Poor";
+"not measured while idle" = "not measured while idle";
+"Recorded every minute, so a fault that comes and goes leaves a trail." = "Recorded every minute, so a fault that comes and goes leaves a trail.";
+"The Bluetooth radio went down %d times in the last hour. Check whether the Mac keeps sleeping." = "The Bluetooth radio went down %d times in the last hour. Check whether the Mac keeps sleeping.";
+"%@ %% of the keyboard's packets are not reaching the Mac. Something nearby is transmitting on 2.4 GHz." = "%@ %% of the keyboard's packets are not reaching the Mac. Something nearby is transmitting on 2.4 GHz.";
+"Signal at %d dBm. The keyboard is too far away, or something is in the way." = "Signal at %d dBm. The keyboard is too far away, or something is in the way.";
+"%@ %% packet loss. Usable, but there is interference around." = "%@ %% packet loss. Usable, but there is interference around.";
+"Signal at %d dBm, weaker than it should be." = "Signal at %d dBm, weaker than it should be.";

@@ -5,6 +5,7 @@ import Foundation
 final class AgentController {
     private let engine = BluetoothEngine()
     private let inventory = DeviceInventory()
+    private let monitor = LinkMonitor()
     private var menuBar: MenuBarController?
 
     private var settings = Settings.load()
@@ -14,6 +15,8 @@ final class AgentController {
     private var timer: Timer?
     private var observers: [NSObjectProtocol] = []
     private var settingsStamp: Date?
+    private var lastRSSISample: Date = .distantPast
+    private var lastHistoryWrite: Date = .distantPast
 
     func start() {
         // Names of absent devices, so they are not shown as "unknown".
@@ -42,6 +45,8 @@ final class AgentController {
 
         engine.latencyLevel = settings.latencyLevel
         settingsStamp = Self.settingsModified()
+        engine.onRSSI = { [weak self] value in self?.monitor.noteRSSI(value) }
+        engine.onRadioStateChange = { [weak self] in self?.monitor.noteRadioStateChange() }
         engine.onStateChange = { [weak self] in self?.tick() }
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in self?.tick() }
         syncMenuBar()
@@ -130,8 +135,27 @@ final class AgentController {
         }
         devices.sort { ($0.present ? 0 : 1, $0.name.lowercased()) < ($1.present ? 0 : 1, $1.name.lowercased()) }
 
+        // Signal strength every 10 s, and a history row every minute. The history is the
+        // whole point: an intermittent fault has to leave a trace, or the next time it shows
+        // up all anyone can do is blame whatever changed since.
+        let now = Date()
+        if now.timeIntervalSince(lastRSSISample) >= 10 {
+            lastRSSISample = now
+            engine.sampleRSSI()
+        }
+        if now.timeIntervalSince(lastHistoryWrite) >= 60 {
+            lastHistoryWrite = now
+            monitor.sampleAndRecord(boosted: anyBoosted,
+                                    bluetooth: engine.state.rawValue,
+                                    deviceName: devices.first(where: \.boosted)?.name ?? "-")
+        }
+
         publish(AgentStatus(bluetooth: engine.state, active: anyBoosted,
-                            apiAvailable: engine.apiAvailable, devices: devices, updated: Date()))
+                            apiAvailable: engine.apiAvailable, devices: devices,
+                            rssi: monitor.current.rssi,
+                            lossPercent: monitor.current.lossPercent,
+                            radioCyclesLastHour: monitor.current.radioCyclesLastHour,
+                            updated: now))
     }
 
     /// Writes only when something changed, or every 5 s so the interface knows we are alive.

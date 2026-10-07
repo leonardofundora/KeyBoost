@@ -8,7 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let model = Model()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        LoginItem.startAgentIfNeeded()
+        model.engineStartupProblem = LoginItem.startAgentIfNeeded()
 
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 580, height: 740),
                           styleMask: [.titled, .closable, .miniaturizable, .resizable],

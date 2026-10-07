@@ -56,6 +56,9 @@
 "Without this, KeyBoost stops working when you restart the Mac." = "Without this, KeyBoost stops working when you restart the Mac.";
 "Closing this window does not stop the boost." = "Closing this window does not stop the boost.";
 "Show log…" = "Show log…";
+"Log File Not Found" = "Log File Not Found";
+"KeyBoost has not created a log file yet. The background engine may not be running." = "KeyBoost has not created a log file yet. The background engine may not be running.";
+"OK" = "OK";
 
 /* Menu bar */
 "KeyBoost — disabled" = "KeyBoost — disabled";

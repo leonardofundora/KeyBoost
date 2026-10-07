@@ -56,6 +56,9 @@
 "Without this, KeyBoost stops working when you restart the Mac." = "Sin esto, KeyBoost deja de funcionar al reiniciar el Mac.";
 "Closing this window does not stop the boost." = "Cerrar esta ventana no detiene la aceleración.";
 "Show log…" = "Mostrar el registro…";
+"Log File Not Found" = "No se encontró el archivo de registro";
+"KeyBoost has not created a log file yet. The background engine may not be running." = "KeyBoost aún no ha creado un archivo de registro. Es posible que el motor en segundo plano no esté funcionando.";
+"OK" = "Aceptar";
 
 /* Barra de menús */
 "KeyBoost — disabled" = "KeyBoost — desactivado";

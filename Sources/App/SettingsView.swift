@@ -214,10 +214,22 @@ struct SettingsView: View {
                 .font(.caption).foregroundStyle(.secondary)
             Spacer()
             Button("Show log…") {
-                NSWorkspace.shared.selectFile(Paths.log.path, inFileViewerRootedAtPath: "")
+                showLog()
             }
         }
         .padding(.horizontal, 20).padding(.vertical, 12)
+    }
+
+    private func showLog() {
+        guard FileManager.default.fileExists(atPath: Paths.log.path) else {
+            let alert = NSAlert()
+            alert.messageText = L("Log File Not Found")
+            alert.informativeText = L("KeyBoost has not created a log file yet. The background engine may not be running.")
+            alert.addButton(withTitle: L("OK"))
+            alert.runModal()
+            return
+        }
+        NSWorkspace.shared.selectFile(Paths.log.path, inFileViewerRootedAtPath: "")
     }
 
     // MARK: - Reusable pieces

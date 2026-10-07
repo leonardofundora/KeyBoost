@@ -7,6 +7,7 @@ final class Model: ObservableObject {
     @Published var settings: Settings = .load()
     @Published var status: AgentStatus = .load()
     @Published var launchAtLogin: Bool = LoginItem.isEnabled
+    @Published var engineStartupProblem: String?
 
     private var observers: [NSObjectProtocol] = []
     private var timer: Timer?
@@ -46,18 +47,19 @@ final class Model: ObservableObject {
     }
 
     func setLaunchAtLogin(_ on: Bool) {
-        LoginItem.setEnabled(on)
+        engineStartupProblem = LoginItem.setEnabled(on)
         launchAtLogin = LoginItem.isEnabled
     }
 
     /// What the user needs to be told, if anything.
     var problem: String? {
-        if let issue = status.bluetooth.problem { return issue }
+        if let engineStartupProblem { return engineStartupProblem }
         if !status.agentAlive {
             return launchAtLogin
                 ? L("The engine is not responding. Try turning “Start at login” off and on again.")
                 : L("The engine is not running. Turn on “Start at login” to start it.")
         }
+        if let issue = status.bluetooth.problem { return issue }
         if !status.apiAvailable {
             return L("This version of macOS no longer exposes the latency setting. KeyBoost cannot help.")
         }

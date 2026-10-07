@@ -16,13 +16,13 @@ SHARED=(Sources/Shared/*.swift)
 #      email in the background-item notice and in Login Items.
 #   3) Otherwise ad-hoc: no personal data, but macOS re-asks for Bluetooth after rebuilds.
 IDENTITY=$(security find-certificate -c "KeyBoost" -Z 2>/dev/null \
-             | awk '/SHA-1 hash:/ {print $3; exit}')
+             | awk '/SHA-1 hash:/ {print $3; exit}' || true)
 if [[ -n "$IDENTITY" ]]; then
   echo "▸ Signing with the self-signed “KeyBoost” certificate"
 else
-  IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null | awk '/[0-9A-F]{40}/ {print $2; exit}')
+  IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null | awk '/[0-9A-F]{40}/ {print $2; exit}' || true)
   if [[ -n "$IDENTITY" ]]; then
-    NAME=$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*"\(.*\)".*/\1/p' | head -1)
+    NAME=$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*"\(.*\)".*/\1/p' | head -1 || true)
     echo "▸ Signing with: $NAME"
     echo "  Heads-up: macOS will show that name in Login Items."
     echo "  Run scripts/make-signing-cert.sh to sign as “KeyBoost” instead."
